@@ -1,5 +1,5 @@
-CFLAGS=-Wall -O2 -g
-LDFLAGS=-lhwloc
+CFLAGS=-Wall -O2 -g -I/usr/local/include
+LDFLAGS=-L/usr/local/lib -lhwloc
 
 processes := $(patsubst tests/%.c,%_processes,$(wildcard tests/*.c))
 threads := $(patsubst tests/%.c,%_threads,$(wildcard tests/*.c))
