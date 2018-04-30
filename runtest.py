@@ -18,9 +18,9 @@ class linux_stat():
 			self.nice = int(arr[2])
 			self.system = int(arr[3])
 			self.idle = int(arr[4])
-			self.iowait = int(arr[5])
-			self.irq = int(arr[6])
-			self.softirq = int(arr[7])
+			self.iowait = 0
+			self.irq = 0
+			self.softirq = 0
 			self.steal = 0
 			self.guest = 0
 			self.guest_nice = 0
@@ -55,39 +55,12 @@ if len(sys.argv) != 2:
 	sys.exit(1)
 cmd = sys.argv[1]
 
-nr_cores=0
-r = re.compile('^processor')
-fd = open('/proc/cpuinfo', 'r')
-for line in fd.readlines():
-	if r.search(line):
-		nr_cores = nr_cores + 1
-fd.close()
-
-setarch = 'setarch linux64 -R'
-try:
-	retcode = subprocess.call(setarch + " /bin/true", shell=True)
-except OSError, e:
-	retcode = -1
-
-if retcode != 0:
-	setarch = ''
-	print >> sys.stderr, 'WARNING: setarch -R failed, address space randomization may cause variability'
-
-pipe = subprocess.Popen('uname -m', shell=True, stdout=subprocess.PIPE).stdout
-arch = pipe.readline().rstrip(os.linesep)
-pipe.close()
-
-if arch == 'ppc64':
-	pipe = subprocess.Popen('ppc64_cpu --smt 2>&1', shell=True, stdout=subprocess.PIPE).stdout
-	smt_status = pipe.readline()
-	pipe.close()
-	if 'off' not in smt_status:
-		print >> sys.stderr, 'WARNING: SMT enabled, suggest disabling'
+nr_cores=96
 
 print 'tasks,processes,processes_idle,threads,threads_idle,linear'
 print '0,0,100,0,100,0'
 
-step = 1
+step = 8
 # if step=5, this is: [5, 10, 15, ... nr_cores]
 data_points = range(step, nr_cores+step, step)
 # this makes it [ 1, 5, 10, ... ]
@@ -97,7 +70,7 @@ if step > 1:
 for i in data_points:
 	c = './%s_processes -t %d -s %d' % (cmd, i, duration)
 	before = linux_stat()
-	pipe = subprocess.Popen(setarch + ' ' + c, shell=True, stdout=subprocess.PIPE).stdout
+	pipe = subprocess.Popen(c, shell=True, stdout=subprocess.PIPE).stdout
 	processes_avg = -1
 	for line in pipe.readlines():
 		if 'testcase:' in line:
@@ -115,7 +88,7 @@ for i in data_points:
 
 	c = './%s_threads -t %d -s %d' % (cmd, i, duration)
 	before = linux_stat()
-	pipe = subprocess.Popen(setarch + ' ' + c, shell=True, stdout=subprocess.PIPE).stdout
+	pipe = subprocess.Popen(c, shell=True, stdout=subprocess.PIPE).stdout
 	threads_avg = -1
 	for line in pipe.readlines():
 		if 'average:' in line:
