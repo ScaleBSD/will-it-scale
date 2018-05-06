@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
 			prev[i] = val;
 		}
 
-		printf("min:%llu max:%llu total:%llu\n", min, max, sum);
+		printf("min: %llu max: %llu total: %llu\n", min, max, sum);
 
 		if (iterations == WARMUP_ITERATIONS)
 			printf("measurement\n");
@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
 
 		if (opt_iterations &&
 		    (iterations > (opt_iterations + WARMUP_ITERATIONS))) {
-			printf("average:%llu\n", total / opt_iterations);
+			printf("average: %llu\n", total / opt_iterations);
 			testcase_cleanup();
 			kill_tasks();
 			exit(0);
