@@ -55,12 +55,13 @@ if len(sys.argv) != 2:
 	sys.exit(1)
 cmd = sys.argv[1]
 
-nr_cores=96
+pipe = subprocess.Popen("sysctl -n hw.ncpu", shell=True, stdout=subprocess.PIPE).stdout
+nr_cores= int(pipe.readlines()[0].rstrip())
 
 print 'tasks,processes,processes_idle,threads,threads_idle,linear'
 print '0,0,100,0,100,0'
 
-step = 8
+step = 2
 # if step=5, this is: [5, 10, 15, ... nr_cores]
 data_points = range(step, nr_cores+step, step)
 # this makes it [ 1, 5, 10, ... ]
