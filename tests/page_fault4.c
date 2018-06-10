@@ -5,7 +5,7 @@
 
 #define MEMSIZE (128 * 1024 * 1024)
 
-char *testcase_description = "Anonymous memory page fault";
+char *testcase_description = "Anonymous memory mmap/munmap of 128MB + 1 random write fault";
 
 void testcase(unsigned long long *iterations, unsigned long nr)
 {
