@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import time
 import subprocess
@@ -6,7 +6,7 @@ import sys
 import os
 import re
 
-class linux_stat():
+class wis_stat():
 	def __init__(self, procstat='/proc/stat'):
 		fd = open(procstat, 'r');
 		for line in fd.readlines():
@@ -33,7 +33,6 @@ class linux_stat():
 
 			break
 		fd.close()
-
 	def idle_fraction(self, prev):
 		busy = self.user + self.nice + self.system + self.irq + self.softirq + self.steal + self.guest + self.guest_nice
 		idle = self.idle + self.iowait
@@ -48,29 +47,53 @@ class linux_stat():
 		return 1.0 * idle / (idle + busy)
 
 
-duration=5
+duration=4
 
 if len(sys.argv) != 2:
 	print >> sys.stderr, 'Usage: runtest.py <testcase>'
 	sys.exit(1)
 cmd = sys.argv[1]
 
-pipe = subprocess.Popen("sysctl -n hw.ncpu", shell=True, stdout=subprocess.PIPE).stdout
-nr_cores= int(pipe.readlines()[0].rstrip())
+pipe = subprocess.Popen('uname -m', shell=True, stdout=subprocess.PIPE).stdout
+arch = pipe.readline().rstrip(os.linesep)
+pipe.close()
+pipe = subprocess.Popen("uname -s", shell=True, stdout=subprocess.PIPE).stdout
+hostos = pipe.readlines()[0].rstrip(os.linesep)
+pipe.close()
+nr_cores=0
+if hostos == "FreeBSD":
+        pipe = subprocess.Popen("sysctl -n hw.ncpu", shell=True, stdout=subprocess.PIPE).stdout
+        nr_cores = int(pipe.readlines()[0].rstrip(os.linesep))
+elif hostos == "Linux":
+        r = re.compile('^processor')
+        fd = open('/proc/cpuinfo', 'r')
+        for line in fd.readlines():
+	        if r.search(line):
+		        nr_cores = nr_cores + 1
+        fd.close()
+        setarch = 'setarch linux64 -R'
+        try:
+	        retcode = subprocess.call(setarch + " /bin/true", shell=True)
+        except OSError, e:
+	        retcode = -1
+
+        if retcode != 0:
+	        setarch = ''
+	        print >> sys.stderr, 'WARNING: setarch -R failed, address space randomization may cause variability'
 
 print 'tasks,processes,processes_idle,threads,threads_idle,linear'
 print '0,0,100,0,100,0'
 
-step = 2
-# if step=5, this is: [5, 10, 15, ... nr_cores]
+step = 4
+# if step=4, this is: [4, 8, 12, ... nr_cores]
 data_points = range(step, nr_cores+step, step)
-# this makes it [ 1, 5, 10, ... ]
+# this makes it [ 1, 4, 8, ... ]
 if step > 1:
 	data_points.insert(0, 1)
 
 for i in data_points:
 	c = './%s_processes -t %d -s %d' % (cmd, i, duration)
-	before = linux_stat()
+	before = wis_stat()
 	pipe = subprocess.Popen(c, shell=True, stdout=subprocess.PIPE).stdout
 	processes_avg = -1
 	for line in pipe.readlines():
@@ -84,11 +107,11 @@ for i in data_points:
 			(name, val) = line.split(':')
 			processes_avg = int(val)
 	pipe.close()
-	after = linux_stat()
+	after = wis_stat()
 	processes_idle = after.idle_fraction(before) * 100
 
 	c = './%s_threads -t %d -s %d' % (cmd, i, duration)
-	before = linux_stat()
+	before = wis_stat()
 	pipe = subprocess.Popen(c, shell=True, stdout=subprocess.PIPE).stdout
 	threads_avg = -1
 	for line in pipe.readlines():
@@ -96,7 +119,7 @@ for i in data_points:
 			(name, val) = line.split(':')
 			threads_avg = int(val)
 	pipe.close()
-	after = linux_stat()
+	after = wis_stat()
 	threads_idle = after.idle_fraction(before) * 100
 
 	if i == 1:
