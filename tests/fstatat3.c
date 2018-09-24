@@ -11,7 +11,7 @@
 #define BUFLEN 4096
 #define FILESIZE (1 * 1024 * 1024)
 
-char *testcase_description = "Separate file fstatat";
+char *testcase_description = "Separate file path relative fstatat";
 
 void testcase(unsigned long long *iterations, unsigned long nr)
 {

@@ -11,7 +11,7 @@
 #define BUFLEN 4096
 #define FILESIZE (1 * 1024 * 1024)
 
-char *testcase_description = "Separate file fstatat";
+char *testcase_description = "Separate directory fstatat";
 
 void testcase(unsigned long long *iterations, unsigned long nr)
 {
@@ -26,7 +26,7 @@ void testcase(unsigned long long *iterations, unsigned long nr)
 	unlink(tmpdir);
 	close(fd);
 	assert(mkdir(tmpdir, 0777) != -1);
-	snprintf(tmpfile, sizeof(tmpfile), "%s/tmp.XXXXX", tmpdir);
+	snprintf(tmpfile, sizeof(tmpfile), "%s/tmp.XXXXXX", tmpdir);
 	assert((fd = mkstemp(tmpfile)) > 0);
 	tmpfile2 = strdup(tmpfile);
 	fname = basename(tmpfile2);
