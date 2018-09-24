@@ -6,6 +6,7 @@
 #include <poll.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/socket.h>
 #include <assert.h>
 
 #define NR_FILES 128
@@ -26,14 +27,11 @@ void testcase_prepare(unsigned long nr_tasks)
 void testcase(unsigned long long *iterations, unsigned long nr)
 {
 	int i;
-	char tmpfile[PATH_MAX];
-	int tmpfiles[NR_FILES];
+	int fds[NR_FILES*2];
 
 	for (i = 0; i < NR_FILES; i++) {
-		sprintf(tmpfile, "/tmp/willitscale.XXXXXX");
-		tmpfiles[i] = mkstemp(tmpfile);
-		assert(tmpfiles[i] >= 0);
-		unlink(tmpfile);
+		assert(socketpair(AF_UNIX, SOCK_DGRAM, 0, &fds[2*i]) >= 0);
+		assert(fds[2*i] >= 0 && fds[2*i + 1] >= 0);
 	}
 
 	while (1) {
@@ -42,7 +40,7 @@ void testcase(unsigned long long *iterations, unsigned long nr)
 		memset(&pfd, 0, sizeof(pfd));
 
 		for (i = 0; i < NR_FILES; i++) {
-			pfd[i].fd = tmpfiles[i];
+			pfd[i].fd = fds[2*i];
 			pfd[i].events = POLLOUT;
 		}
 
