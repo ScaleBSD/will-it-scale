@@ -19,8 +19,8 @@ void testcase_prepare(unsigned long nr_tasks)
 	int nr_procs = sysconf(_SC_NPROCESSORS_CONF);
 
 	getrlimit(RLIMIT_NOFILE, &rlim);
-	rlim.rlim_cur = (NR_FILES + 10) * nr_procs;
-	rlim.rlim_max = (NR_FILES + 10) * nr_procs;
+	rlim.rlim_cur = (2*NR_FILES + 10) * nr_procs;
+	rlim.rlim_max = (2*NR_FILES + 10) * nr_procs;
 	assert(setrlimit(RLIMIT_NOFILE, &rlim) == 0);
 }
 
