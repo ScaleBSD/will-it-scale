@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <sys/errno.h>
 #include <assert.h>
 
 #define NR_FILES 128
@@ -26,22 +27,23 @@ void testcase_prepare(unsigned long nr_tasks)
 
 void testcase(unsigned long long *iterations, unsigned long nr)
 {
-	int i;
-	int fds[NR_FILES*2];
+	int i, rc, fds[NR_FILES*2];
 	fd_set readfds;
 	struct timeval timeout;
 
 	FD_ZERO(&readfds);
-	bzero(&timeout, sizeof(timeout));
 	for (i = 0; i < NR_FILES; i++) {
 		assert(socketpair(AF_UNIX, SOCK_DGRAM, 0, &fds[2*i]) >= 0);
 		assert(fds[2*i] >= 0 && fds[2*i + 1] >= 0);
-		FD_SET(fds[2*i], &readfds);
 	}
 
 	while (1) {
-
-		assert(select(NR_FILES, &readfds, NULL, NULL, &timeout) >= 0);
+		bzero(&timeout, sizeof(timeout));
+		for (i = 0; i < NR_FILES; i++)
+			FD_SET(fds[2*i], &readfds);
+		rc = select(NR_FILES, &readfds, NULL, NULL, &timeout);
+		if (rc < 0)
+			assert(errno == EINTR);
 
 		(*iterations)++;
 	}
