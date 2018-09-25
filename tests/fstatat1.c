@@ -15,7 +15,7 @@ char *testcase_description = "Separate file directory relative fstatat";
 void testcase(unsigned long long *iterations, unsigned long nr)
 {
 	char buf[FILESIZE];
-	char tmpfile[] = "/tmp/willitscale.XXXXXX";
+	char tmpfile[] = "/var/tmp/willitscale.XXXXXX";
 	char *fname, *tmpfile2;
 	int fd = mkstemp(tmpfile);
 	int dfd;
