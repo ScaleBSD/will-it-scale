@@ -10,9 +10,9 @@
 #include <sys/errno.h>
 #include <assert.h>
 
-#define NR_FILES 128
+#define NR_FILES 4
 
-char *testcase_description = "select of 128 fds";
+char *testcase_description = "select of 4 fds";
 
 void testcase_prepare(unsigned long nr_tasks)
 {
