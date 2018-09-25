@@ -21,7 +21,7 @@
 
 #define MAX_TASKS 1024
 #define CACHELINE_SIZE 128
-#define WARMUP_ITERATIONS 4
+#define WARMUP_ITERATIONS 3
 
 extern char *testcase_description;
 extern void __attribute__((weak)) testcase_prepare(unsigned long nr_tasks) { }
