@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <sys/param.h>
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+
 
 #define BUFLEN 4096
 #define FILESIZE (1 * 1024 * 1024)
