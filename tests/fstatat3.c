@@ -25,7 +25,11 @@ void testcase(unsigned long long *iterations, unsigned long nr)
 	unlink(tmpdir);
 	close(fd);
 	tmpdir2 = strdup(tmpdir);
+#if defined(__FreeBSD_version) && __FreeBSD_version < 1200000
+	fname = basename_r(tmpdir, tmpdir2);
+#else
 	fname = basename(tmpdir2);
+#endif
 	snprintf(tmpdirrel, sizeof(tmpdirrel), "tmp/%s", fname);
 	assert(mkdir(tmpdir, 0777) != -1);
 	assert((dfd = open("/var", O_RDONLY, 0)) != -1);
